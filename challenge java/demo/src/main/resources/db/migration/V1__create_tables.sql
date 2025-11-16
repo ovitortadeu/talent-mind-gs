@@ -1,0 +1,57 @@
+CREATE TABLE TB_MTT_ESTADO (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY, 
+    sigla_estado VARCHAR(2) NOT NULL,
+    nome_estado VARCHAR(25) NOT NULL
+);
+
+CREATE TABLE TB_MTT_CIDADE (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY, 
+    tb_mtt_estado_id BIGINT NOT NULL,
+    nome_cidade VARCHAR(65) NOT NULL,
+    numero_ddd INT NOT NULL 
+);
+
+CREATE TABLE TB_MTT_FILIAL (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY 
+);
+
+CREATE TABLE TB_MTT_USUARIO (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY, 
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    senha VARCHAR(100) NOT NULL,
+    role VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE TB_MTT_VEICULO (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY, 
+    tb_mtt_usuario_id BIGINT NOT NULL,
+    placa_antiga VARCHAR(7),
+    placa_nova VARCHAR(10) NOT NULL UNIQUE,
+    tipo_veiculo VARCHAR(75) NOT NULL
+);
+
+CREATE TABLE TB_MTT_CAMERA (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY, 
+    tb_mtt_filial_id BIGINT NOT NULL,
+    modelo VARCHAR(40) NOT NULL
+);
+
+CREATE TABLE TB_MTT_IOT (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY, 
+    tb_mtt_veiculo_id BIGINT NOT NULL,
+    status SMALLINT NOT NULL CHECK (status IN (0, 1)),
+    tipo VARCHAR(30) NOT NULL
+);
+
+CREATE TABLE TB_MTT_LOGRADOURO (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY, 
+    tb_mtt_usuario_id BIGINT, 
+    tb_mtt_filial_id BIGINT,
+    tb_mtt_cidade_id BIGINT NOT NULL,
+    nome_logradouro VARCHAR(100) NOT NULL,
+    numero_logradouro VARCHAR(10) NOT NULL,
+    cep VARCHAR(8) NOT NULL,
+    complemento VARCHAR(50),
+    CONSTRAINT CHK_LOGRADOURO_OWNER CHECK (tb_mtt_usuario_id IS NOT NULL OR tb_mtt_filial_id IS NOT NULL)
+);

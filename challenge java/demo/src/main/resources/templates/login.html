@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mottu - Login</title>
+</head>
+<body>
+    <div style="width: 300px; margin: 50px auto; text-align: center;">
+        <h1>Login - Mottu</h1>
+        <div th:if="${param.error}" style="color:red; margin-bottom: 15px;">
+            Usuário ou senha inválidos.
+        </div>
+        <div th:if="${param.logout}" style="color:green; margin-bottom: 15px;">
+            Você foi desconectado com sucesso.
+        </div>
+        
+        <form th:action="@{/login}" method="post">
+        
+            <div style="margin-bottom: 10px;">
+                <label for="username">Usuário:</label><br/>
+                <input type="text" id="username" name="username" autofocus="autofocus" required />
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="password">Senha:</label><br/>
+                <input type="password" id="password" name="password" required />
+            </div>
+            <div>
+                <button type="submit">Entrar</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
