@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{skills.list.title}"></title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+    <div th:replace="~{layout :: header}"></div>
+
+    <main>
+        <h3 th:text="#{skills.list.header}"></h3>
+        
+        <div sec:authorize="hasRole('ADMIN')" style="margin-bottom: 15px;">
+            <a th:href="@{/competencias/new}" class="button-link add" th:text="#{skills.list.add}"></a>
+        </div>
+        
+        <div th:if="${message}" class="success-message" th:text="${message}"></div>
+        <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th th:text="#{skills.list.id}"></th>
+                    <th th:text="#{skills.list.name}"></th>
+                    <th th:text="#{skills.list.description}"></th>
+                    <th sec:authorize="hasRole('ADMIN')" th:text="#{skills.list.actions}"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${competencias.isEmpty()}">
+                    <td colspan="4" th:text="#{skills.list.empty}"></td>
+                </tr>
+                <tr th:each="comp : ${competencias}">
+                    <td th:text="${comp.id}">1</td>
+                    <td th:text="${comp.nome}">IA Generativa</td>
+                    <td th:text="${comp.descricao}">Uso de LLMs...</td>
+                    <td sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{/competencias/edit/{id}(id=${comp.id})}" th:text="#{vagas.list.edit}">Editar</a>
+                        |
+                        <a th:href="@{/competencias/delete/{id}(id=${comp.id})}" th:text="#{vagas.list.delete}">Excluir</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+   </main>
+
+    <div th:replace="~{layout :: footer}"></div>
+</body>
+</html>

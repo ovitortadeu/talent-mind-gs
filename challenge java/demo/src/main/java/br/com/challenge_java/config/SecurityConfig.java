@@ -34,18 +34,19 @@ public class SecurityConfig {
     private final UsuarioRepository usuarioRepository;
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        return username -> usuarioRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + username));
+    UserDetailsService userDetailsService() {
+        // Busca o usuário pelo email, que é o 'username' no Spring Security
+        return email -> usuarioRepository.findByEmail(email) 
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider() {
+    AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder());
@@ -53,13 +54,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
     @Bean
     @Order(1)
-    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http, JWTAuthFilter jwtAuthFilter) throws Exception {
+    SecurityFilterChain apiSecurityFilterChain(HttpSecurity http, JWTAuthFilter jwtAuthFilter) throws Exception {
         http
             .securityMatcher("/api/**", "/auth/**", "/swagger-ui/**", "/v3/api-docs/**")
             .csrf(csrf -> csrf.disable())
@@ -76,17 +77,22 @@ public class SecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/login", "/css/**", "/js/**", "/error").permitAll()
-                .requestMatchers("/veiculos/new", "/veiculos/edit/**", "/veiculos/delete/**").hasRole("ADMIN")
+                // Rotas de Admin (Exemplo para os futuros CRUDS)
+                .requestMatchers("/vagas/new", "/vagas/edit/**", "/vagas/delete/**").hasRole("ADMIN")
+                .requestMatchers("/competencias/new", "/competencias/edit/**", "/competencias/delete/**").hasRole("ADMIN")
+                .requestMatchers("/cursos/new", "/cursos/edit/**", "/cursos/delete/**").hasRole("ADMIN")
+                // Qualquer outra rota web exige autenticação
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/veiculos", true)
+                .usernameParameter("email") // Informa ao Spring Security que o campo de usuário é 'email'
+                .defaultSuccessUrl("/dashboard", true) // Redireciona para o dashboard
                 .permitAll()
             )
             .logout(logout -> logout

@@ -1,4 +1,3 @@
-// br/com/challenge_java/controller/WebController.java
 package br.com.challenge_java.control;
 
 import org.springframework.stereotype.Controller;
@@ -14,6 +13,6 @@ public class WebController {
 
     @GetMapping("/")
     public String home() {
-        return "redirect:/veiculos"; 
+        return "redirect:/dashboard";
     }
 }

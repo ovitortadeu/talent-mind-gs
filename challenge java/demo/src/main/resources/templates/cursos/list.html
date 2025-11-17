@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{courses.list.title}"></title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+    <div th:replace="~{layout :: header}"></div>
+
+    <main>
+        <h3 th:text="#{courses.list.header}"></h3>
+        
+        <div sec:authorize="hasRole('ADMIN')" style="margin-bottom: 15px;">
+            <a th:href="@{/cursos/new}" class="button-link add" th:text="#{courses.list.add}"></a>
+        </div>
+        
+        <div th:if="${message}" class="success-message" th:text="${message}"></div>
+        <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th th:text="#{courses.list.id}"></th>
+                    <th th:text="#{courses.list.name}"></th>
+                    <th th:text="#{courses.list.institution}"></th>
+                    <th th:text="#{courses.list.link}"></th>
+                    <th sec:authorize="hasRole('ADMIN')" th:text="#{courses.list.actions}"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${cursos.isEmpty()}">
+                    <td colspan="5" th:text="#{courses.list.empty}"></td>
+                </tr>
+                <tr th:each="curso : ${cursos}">
+                    <td th:text="${curso.id}">1</td>
+                    <td th:text="${curso.nome}">Bootcamp IA Generativa</td>
+                    <td th:text="${curso.instituicao}">FIAP</td>
+                    <td><a th:href="${curso.link}" th:text="${curso.link}" target="_blank">link.fiap.com/ia</a></td>
+                    <td sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{/cursos/edit/{id}(id=${curso.id})}" th:text="#{vagas.list.edit}">Editar</a>
+                        |
+                        <a th:href="@{/cursos/delete/{id}(id=${curso.id})}" th:text="#{vagas.list.delete}">Excluir</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+   </main>
+
+    <div th:replace="~{layout :: footer}"></div>
+</body>
+</html>

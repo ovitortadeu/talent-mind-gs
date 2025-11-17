@@ -11,10 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -39,7 +36,7 @@ public class UsuarioController {
 
         EntityModel<UsuarioDTO> resource = EntityModel.of(novoUsuario,
                 linkTo(methodOn(UsuarioController.class).buscarUsuarioPorId(novoUsuario.getId())).withSelfRel(),
-                linkTo(methodOn(UsuarioController.class).listarUsuariosPaginados(0, 10, "id", "ASC")).withRel("usuarios")
+                linkTo(methodOn(UsuarioController.class).listarUsuariosPaginados(0, 10, "nomeUsuario", "ASC")).withRel("usuarios")
         );
 
         URI location = ServletUriComponentsBuilder
@@ -56,17 +53,17 @@ public class UsuarioController {
 
         EntityModel<UsuarioDTO> resource = EntityModel.of(usuarioDTO,
                 linkTo(methodOn(UsuarioController.class).buscarUsuarioPorId(id)).withSelfRel(),
-                linkTo(methodOn(UsuarioController.class).listarUsuariosPaginados(0, 10, "id", "ASC")).withRel("usuarios")
+                linkTo(methodOn(UsuarioController.class).listarUsuariosPaginados(0, 10, "nomeUsuario", "ASC")).withRel("usuarios")
         );
         return ResponseEntity.ok(resource);
     }
 
     @GetMapping
     public ResponseEntity<PagedModel<EntityModel<UsuarioDTO>>> listarUsuariosPaginados(
-            @RequestParam(value = "page", defaultValue = "0") Integer page,
-            @RequestParam(value = "size", defaultValue = "10") Integer size,
-            @RequestParam(value = "sortBy", defaultValue = "username") String sortBy,
-            @RequestParam(value = "direction", defaultValue = "ASC") String direction
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(defaultValue = "nomeUsuario") String sortBy, // Padrão atualizado
+            @RequestParam(defaultValue = "ASC") String direction
     ) {
         Sort.Direction sortDirection = Sort.Direction.fromString(direction.toUpperCase());
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
@@ -86,7 +83,8 @@ public class UsuarioController {
         PagedModel<EntityModel<UsuarioDTO>> pagedModel = PagedModel.of(usuarioResources, metadata,
                 linkTo(methodOn(UsuarioController.class)
                         .listarUsuariosPaginados(page, size, sortBy, direction)).withSelfRel());
-
+        
+        // Links de paginação HATEOAS
         if (usuariosPage.hasPrevious()) {
             pagedModel.add(linkTo(methodOn(UsuarioController.class)
                     .listarUsuariosPaginados(usuariosPage.previousOrFirstPageable().getPageNumber(), size, sortBy, direction)).withRel("prev"));
@@ -104,7 +102,6 @@ public class UsuarioController {
                     .listarUsuariosPaginados(usuariosPage.getTotalPages() -1, size, sortBy, direction)).withRel("last"));
         }
 
-
         return ResponseEntity.ok(pagedModel);
     }
 
@@ -114,7 +111,7 @@ public class UsuarioController {
         UsuarioDTO usuarioAtualizado = usuarioService.atualizarUsuario(id, usuarioUpdateDTO);
         EntityModel<UsuarioDTO> resource = EntityModel.of(usuarioAtualizado,
                 linkTo(methodOn(UsuarioController.class).buscarUsuarioPorId(id)).withSelfRel(),
-                linkTo(methodOn(UsuarioController.class).listarUsuariosPaginados(0, 10, "id", "ASC")).withRel("usuarios")
+                linkTo(methodOn(UsuarioController.class).listarUsuariosPaginados(0, 10, "nomeUsuario", "ASC")).withRel("usuarios")
         );
         return ResponseEntity.ok(resource);
     }

@@ -2,19 +2,23 @@
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${pageTitle} ?: 'Gestão Mottu'"></title>
+    <title th:text="${pageTitle} ?: 'TalentMind'"></title>
     <link rel="stylesheet" th:href="@{/css/style.css}" />
 </head>
 <body>
     <header th:fragment="header">
-        <h2>Sistema de Gerenciamento Mottu</h2>
+        <h2 th:text="#{layout.header}"></h2>
         <nav>
-            <a th:href="@{/dashboard}" sec:authorize="hasRole('ADMIN')">Dashboard</a>
+            <a th:href="@{/dashboard}" th:text="#{layout.nav.dashboard}"></a>
             <span sec:authorize="hasRole('ADMIN')">|</span>
-            <a th:href="@{/veiculos}">Veículos</a>
+            <a th:href="@{/vagas}" sec:authorize="hasRole('ADMIN')" th:text="#{layout.nav.vacancies}"></a>
+            <span sec:authorize="hasRole('ADMIN')">|</span>
+            <a th:href="@{/competencias}" sec:authorize="hasRole('ADMIN')" th:text="#{layout.nav.skills}"></a>
+            <span sec:authorize="hasRole('ADMIN')">|</span>
+            <a th:href="@{/cursos}" sec:authorize="hasRole('ADMIN')" th:text="#{layout.nav.courses}"></a>
         </nav>
         <form th:action="@{/logout}" method="post">
-            <button type="submit">Sair</button>
+            <button type="submit" th:text="#{layout.button.logout}"></button>
         </form>
     </header>
 
@@ -22,7 +26,11 @@
     </main>
     
     <footer th:fragment="footer">
-        <p>&copy; 2025 - Challenge Mottu</p>
+        <p th:text="#{layout.footer}"></p>
+         <div style="margin-top: 10px; font-size: 0.9em;">
+            <a th:href="@{/dashboard(lang=pt_BR)}">Português</a> | 
+            <a th:href="@{/dashboard(lang=en)}">English</a>
+        </div>
     </footer>
 </body>
 </html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${curso.id == null} ? #{courses.form.new.title} : #{courses.form.edit.title}"></title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+    <div th:replace="~{layout :: header}"></div>
+
+    <main>
+        <h3 th:text="${curso.id == null} ? #{courses.form.new.header} : #{courses.form.edit.header}"></h3>
+        <form th:action="@{/cursos/save}" th:object="${curso}" method="post">
+            <input type="hidden" th:field="*{id}" />
+    
+            <div>
+                <label for="nome" th:text="#{courses.form.name}"></label>
+                <input type="text" id="nome" th:field="*{nome}" />
+                <span style="color:red;" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></span>
+            </div>
+            
+            <div>
+                <label for="instituicao" th:text="#{courses.form.institution}"></label>
+                <input type="text" id="instituicao" th:field="*{instituicao}" />
+            </div>
+
+            <div>
+                <label for="link" th:text="#{courses.form.link}"></label>
+                <input type="text" id="link" th:field="*{link}" />
+            </div>
+            
+            <button type="submit" th:text="#{courses.form.save}"></button>
+            <a th:href="@{/cursos}" style="margin-left: 10px;" th:text="#{courses.form.cancel}"></a>
+        </form>
+    </main>
+
+    <div th:replace="~{layout :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{vagas.list.title}"></title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+    <div th:replace="~{layout :: header}"></div>
+
+    <main>
+        <h3 th:text="#{vagas.list.header}"></h3>
+        
+        <div sec:authorize="hasRole('ADMIN')" style="margin-bottom: 15px;">
+            <a th:href="@{/vagas/new}" class="button-link add" th:text="#{vagas.list.add}"></a>
+        </div>
+        
+        <div th:if="${message}" class="success-message" th:text="${message}"></div>
+        <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th th:text="#{vagas.list.id}"></th>
+                    <th th:text="#{vagas.list.title}"></th>
+                    <th th:text="#{vagas.list.company}"></th>
+                    <th th:text="#{vagas.list.salary}"></th>
+                    <th sec:authorize="hasRole('ADMIN')" th:text="#{vagas.list.actions}"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${vagas.isEmpty()}">
+                    <td colspan="5" th:text="#{vagas.list.empty}"></td>
+                </tr>
+                <tr th:each="vaga : ${vagas}">
+                    <td th:text="${vaga.id}">1</td>
+                    <td th:text="${vaga.titulo}">Engenheiro de IA</td>
+                    <td th:text="${vaga.empresa}">Tech Inovadora</td>
+                    <td th:text="${vaga.salarioMedio} ? ${#numbers.formatCurrency(vaga.salarioMedio)} : 'N/D'">R$ 15.000,00</td>
+                    <td sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{/vagas/edit/{id}(id=${vaga.id})}" th:text="#{vagas.list.edit}"></a>
+                        |
+                        <a th:href="@{/vagas/delete/{id}(id=${vaga.id})}" th:text="#{vagas.list.delete}"></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+   </main>
+
+    <div th:replace="~{layout :: footer}"></div>
+</body>
+</html>

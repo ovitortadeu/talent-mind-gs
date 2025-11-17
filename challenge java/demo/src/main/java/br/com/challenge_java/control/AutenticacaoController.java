@@ -21,16 +21,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class AutenticacaoController {
 
     private final AuthenticationManager authenticationManager;
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService; // Injeta o UserDetailsServiceImpl
     private final JWTUtil jwtUtil;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@RequestBody @Valid AuthRequestDTO authRequest) {
+        // Autentica usando o email como username
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
+                new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
         );
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getUsername());
+
+        // Carrega o usuário pelo email
+        final UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getEmail());
         final String jwt = jwtUtil.generateToken(userDetails);
+        
         return ResponseEntity.ok(new AuthResponseDTO(jwt));
     }
 }

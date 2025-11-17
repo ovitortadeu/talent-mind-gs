@@ -7,10 +7,12 @@ import br.com.challenge_java.exception.BusinessException;
 import br.com.challenge_java.exception.ResourceNotFoundException;
 import br.com.challenge_java.mapper.UsuarioMapperInterface; 
 import br.com.challenge_java.model.Usuario;
+import br.com.challenge_java.model.enuns.Role; // Importando o Role
 import br.com.challenge_java.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -33,14 +35,16 @@ public class UsuarioService {
     private final UsuarioMapperInterface usuarioMapper; 
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Registra um novo usuário no sistema.
+     * @param usuarioCreateDTO DTO com os dados de criação.
+     * @return UsuarioDTO do usuário recém-criado.
+     */
     @Transactional
     public UsuarioDTO registrarUsuario(UsuarioCreateDTO usuarioCreateDTO) {
-        log.info("Tentativa de registrar novo usuário com username: {}", usuarioCreateDTO.getUsername());
+        log.info("Tentativa de registrar novo usuário com email: {}", usuarioCreateDTO.getEmail());
 
-        if (usuarioRepository.findByUsername(usuarioCreateDTO.getUsername()).isPresent()) {
-            log.warn("Username '{}' já cadastrado.", usuarioCreateDTO.getUsername());
-            throw new BusinessException("Username já cadastrado.");
-        }
+        // Validação de email duplicado
         if (usuarioRepository.findByEmail(usuarioCreateDTO.getEmail()).isPresent()) {
             log.warn("Email '{}' já cadastrado.", usuarioCreateDTO.getEmail());
             throw new BusinessException("Email já cadastrado.");
@@ -48,20 +52,26 @@ public class UsuarioService {
 
         Usuario usuario = usuarioMapper.toUsuario(usuarioCreateDTO);
         usuario.setSenha(passwordEncoder.encode(usuarioCreateDTO.getSenha()));
+        usuario.setRole(Role.USER); // Define o papel padrão para novos usuários
 
         try {
             Usuario usuarioSalvo = usuarioRepository.save(usuario);
-            log.info("Usuário '{}' registrado com sucesso com ID: {}", usuarioSalvo.getUsername(), usuarioSalvo.getId());
+            log.info("Usuário '{}' (ID: {}) registrado com sucesso.", usuarioSalvo.getNomeUsuario(), usuarioSalvo.getId());
             return usuarioMapper.toUsuarioDTO(usuarioSalvo); 
         } catch (DataIntegrityViolationException e) {
-            log.error("Erro de integridade de dados ao salvar usuário com username '{}': {}", usuarioCreateDTO.getUsername(), e.getMessage(), e);
+            log.error("Erro de integridade de dados ao salvar usuário com email '{}': {}", usuarioCreateDTO.getEmail(), e.getMessage(), e);
             throw new BusinessException("Erro ao salvar usuário devido a uma violação de integridade de dados.");
         } catch (Exception e) {
-            log.error("Erro inesperado ao salvar usuário com username '{}': {}", usuarioCreateDTO.getUsername(), e.getMessage(), e);
+            log.error("Erro inesperado ao salvar usuário com email '{}': {}", usuarioCreateDTO.getEmail(), e.getMessage(), e);
             throw new BusinessException("Ocorreu um erro inesperado ao tentar registrar o usuário.");
         }
     }
     
+    /**
+     * Busca um usuário pelo ID.
+     * @param id O ID do usuário.
+     * @return UsuarioDTO.
+     */
     @Cacheable(value = "usuarios", key = "#id")
     @Transactional(readOnly = true)
     public UsuarioDTO buscarPorId(Long id) {
@@ -74,33 +84,42 @@ public class UsuarioService {
                 });
     }
 
+    /**
+     * Lista todos os usuários de forma paginada.
+     * @param pageable Configuração da paginação.
+     * @return Página de UsuarioDTO.
+     */
     @Transactional(readOnly = true)
     public Page<UsuarioDTO> listarTodosPaginado(Pageable pageable) {
         log.debug("Listando usuários com paginação: {}", pageable);
         Page<Usuario> usuariosPage = usuarioRepository.findAll(pageable);
-        log.debug("Encontrados {} usuários na página {} de {}. Conteúdo da página: {}",
-                usuariosPage.getTotalElements(),
-                pageable.getPageNumber(),
-                usuariosPage.getTotalPages(),
-                usuariosPage.getContent().size());
         return usuariosPage.map(usuarioMapper::toUsuarioDTO);
     }
     
-    @Cacheable(value = "usuariosPorUsername", key = "#username")
+    /**
+     * Busca a entidade usuário pelo email.
+     * @param email Email do usuário.
+     * @return Optional<Usuario>
+     */
+    @Cacheable(value = "usuariosPorEmail", key = "#email")
     @Transactional(readOnly = true)
-    public Optional<Usuario> buscarEntidadePorUsername(String username) {
-        log.debug("Buscando entidade usuário com username: {}", username);
-        Optional<Usuario> usuarioOptional = usuarioRepository.findByUsername(username);
-        if (usuarioOptional.isPresent()) {
-            log.debug("Entidade usuário encontrada para username: {}", username);
-        } else {
-            log.debug("Nenhuma entidade usuário encontrada para username: {}", username);
-        }
-        return usuarioOptional;
+    public Optional<Usuario> buscarEntidadePorEmail(String email) {
+        log.debug("Buscando entidade usuário com email: {}", email);
+        return usuarioRepository.findByEmail(email);
     }
     	
    
+    /**
+     * Atualiza um usuário existente.
+     * @param id ID do usuário a ser atualizado.
+     * @param usuarioUpdateDTO DTO com os dados de atualização.
+     * @return UsuarioDTO atualizado.
+     */
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "usuarios", key = "#id"),
+        @CacheEvict(value = "usuariosPorEmail", allEntries = true) // Simplificado
+    })
     public UsuarioDTO atualizarUsuario(Long id, UsuarioUpdateDTO usuarioUpdateDTO) {
         log.info("Tentativa de atualizar usuário com ID: {}", id);
         Usuario usuarioExistente = usuarioRepository.findById(id)
@@ -109,12 +128,7 @@ public class UsuarioService {
                     return new ResourceNotFoundException("Usuário não encontrado com ID: " + id);
                 });
 
-        if (StringUtils.hasText(usuarioUpdateDTO.getUsername()) && !usuarioUpdateDTO.getUsername().equals(usuarioExistente.getUsername())) {
-            if(usuarioRepository.findByUsername(usuarioUpdateDTO.getUsername()).isPresent()){
-                log.warn("Tentativa de atualizar para username '{}' que já existe.", usuarioUpdateDTO.getUsername());
-                throw new BusinessException("Username já cadastrado para outro usuário.");
-            }
-        }
+        // Validação de email duplicado na atualização
         if (StringUtils.hasText(usuarioUpdateDTO.getEmail()) && !usuarioUpdateDTO.getEmail().equals(usuarioExistente.getEmail())) {
              if(usuarioRepository.findByEmail(usuarioUpdateDTO.getEmail()).isPresent()){
                 log.warn("Tentativa de atualizar para email '{}' que já existe.", usuarioUpdateDTO.getEmail());
@@ -138,7 +152,15 @@ public class UsuarioService {
         }
     }
 
+    /**
+     * Deleta um usuário pelo ID.
+     * @param id ID do usuário.
+     */
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "usuarios", key = "#id"),
+        @CacheEvict(value = "usuariosPorEmail", allEntries = true) // Simplificado
+    })
     public void deletarUsuario(Long id) {
         log.info("Tentativa de deletar usuário com ID: {}", id);
         if (!usuarioRepository.existsById(id)) {
@@ -150,7 +172,8 @@ public class UsuarioService {
             log.info("Usuário com ID {} deletado com sucesso.", id);
         } catch (DataIntegrityViolationException e) {
             log.error("Erro de integridade de dados ao deletar usuário com ID '{}': {}. Pode haver entidades relacionadas.", id, e.getMessage(), e);
-            throw new BusinessException("Não é possível deletar o usuário pois ele possui dados relacionados (ex: veículos).");
+            // Mensagem atualizada para o novo contexto (não mais veículos)
+            throw new BusinessException("Não é possível deletar o usuário pois ele possui dados relacionados (ex: competências associadas).");
         }
     }
 }

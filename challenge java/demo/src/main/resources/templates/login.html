@@ -2,32 +2,34 @@
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Mottu - Login</title>
+    <title th:text="#{login.title}"></title>
 </head>
 <body>
     <div style="width: 300px; margin: 50px auto; text-align: center;">
-        <h1>Login - Mottu</h1>
-        <div th:if="${param.error}" style="color:red; margin-bottom: 15px;">
-            Usuário ou senha inválidos.
+        <h1 th:text="#{login.header}"></h1>
+        <div th:if="${param.error}" style="color:red; margin-bottom: 15px;" th:text="#{login.error}">
         </div>
-        <div th:if="${param.logout}" style="color:green; margin-bottom: 15px;">
-            Você foi desconectado com sucesso.
+        <div th:if="${param.logout}" style="color:green; margin-bottom: 15px;" th:text="#{login.logout}">
         </div>
         
         <form th:action="@{/login}" method="post">
         
             <div style="margin-bottom: 10px;">
-                <label for="username">Usuário:</label><br/>
-                <input type="text" id="username" name="username" autofocus="autofocus" required />
+                <label for="email" th:text="#{login.email.label}"></label><br/>
+                <input type="email" id="email" name="email" autofocus="autofocus" required />
             </div>
             <div style="margin-bottom: 15px;">
-                <label for="password">Senha:</label><br/>
+                <label for="password" th:text="#{login.password.label}"></label><br/>
                 <input type="password" id="password" name="password" required />
             </div>
             <div>
-                <button type="submit">Entrar</button>
+                <button type="submit" th:text="#{login.button}"></button>
             </div>
         </form>
+         <div style="margin-top: 20px;">
+            <a th:href="@{/login(lang=pt_BR)}">Português</a> | 
+            <a th:href="@{/login(lang=en)}">English</a>
+        </div>
     </div>
 </body>
 </html>
