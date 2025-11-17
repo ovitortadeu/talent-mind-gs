@@ -2,30 +2,43 @@
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${competencia.id == null} ? #{skills.form.new.title} : #{skills.form.edit.title}"></title>
+    <title th:text="${vaga.id == null} ? #{vagas.form.new.title} : #{vagas.form.edit.title}"></title>
     <link rel="stylesheet" th:href="@{/css/style.css}" />
 </head>
 <body>
     <div th:replace="~{layout :: header}"></div>
 
     <main>
-        <h3 th:text="${competencia.id == null} ? #{skills.form.new.header} : #{skills.form.edit.header}"></h3>
-        <form th:action="@{/competencias/save}" th:object="${competencia}" method="post">
+        <h3 th:text="${vaga.id == null} ? #{vagas.form.new.header} : #{vagas.form.edit.header}"></h3>
+        <form th:action="@{/vagas/save}" th:object="${vaga}" method="post">
             <input type="hidden" th:field="*{id}" />
     
             <div>
-                <label for="nome" th:text="#{skills.form.name}"></label>
-                <input type="text" id="nome" th:field="*{nome}" />
-                <span style="color:red;" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></span>
+                <label for="titulo" th:text="#{vagas.form.title}"></label>
+                <input type="text" id="titulo" th:field="*{titulo}" />
+                <span style="color:red;" th:if="${#fields.hasErrors('titulo')}" th:errors="*{titulo}"></span>
             </div>
             
             <div>
-                <label for="descricao" th:text="#{skills.form.description}"></label>
+                <label for="descricao" th:text="#{vagas.form.description}"></label>
                 <input type="text" id="descricao" th:field="*{descricao}" />
+                <span style="color:red;" th:if="${#fields.hasErrors('descricao')}" th:errors="*{descricao}"></span>
+            </div>
+
+            <div>
+                <label for="empresa" th:text="#{vagas.form.company}"></label>
+                <input type="text" id="empresa" th:field="*{empresa}" />
+                <span style="color:red;" th:if="${#fields.hasErrors('empresa')}" th:errors="*{empresa}"></span>
             </div>
             
-            <button type="submit" th:text="#{skills.form.save}"></button>
-            <a th:href="@{/competencias}" style="margin-left: 10px;" th:text="#{skills.form.cancel}"></a>
+            <div>
+                <label for="salarioMedio" th:text="#{vagas.form.salary}"></label>
+                <input type="number" step="0.01" id="salarioMedio" th:field="*{salarioMedio}" />
+                <span style="color:red;" th:if="${#fields.hasErrors('salarioMedio')}" th:errors="*{salarioMedio}"></span>
+            </div>
+            
+            <button type="submit" th:text="#{vagas.form.save}"></button>
+            <a th:href="@{/vagas}" style="margin-left: 10px;" th:text="#{vagas.form.cancel}"></a>
         </form>
     </main>
 
