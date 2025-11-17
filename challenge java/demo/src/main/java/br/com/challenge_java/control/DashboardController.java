@@ -9,9 +9,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.Locale; // IMPORTAR
+import org.slf4j.Logger; // IMPORTAR
+import org.slf4j.LoggerFactory; // IMPORTAR
+
 @Controller
 @RequiredArgsConstructor
 public class DashboardController {
+
+    // ADICIONAR ESTA LINHA
+    private static final Logger log = LoggerFactory.getLogger(DashboardController.class);
 
     private final UsuarioRepository usuarioRepository;
     private final VagaRepository vagaRepository;
@@ -19,7 +26,11 @@ public class DashboardController {
     private final CursoRequalificacaoRepository cursoRepository;
 
     @GetMapping("/dashboard")
-    public String dashboard(Model model) {
+    public String dashboard(Model model, Locale locale) { // ADICIONAR "Locale locale"
+        
+        // ADICIONAR ESTE LOG
+        log.info("--- Carregando Dashboard. O Locale atual para este usuário é: {} ---", locale);
+
         model.addAttribute("pageTitle", "Dashboard"); // Para o layout
         model.addAttribute("totalUsuarios", usuarioRepository.count());
         model.addAttribute("totalVagas", vagaRepository.count());
