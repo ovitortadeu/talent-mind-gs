@@ -79,8 +79,8 @@ Execute o projeto TalentMind via Maven Wrapper:
 O Dashboard e a interface de administração estão disponíveis em: `http://localhost:8080/dashboard`.
 
 **Login de Administrador:**
--   **E-mail**: `admin@talentmind.com`
--   **Senha**: `password` (Senha BCrypt armazenada no script V4)
+-   **E-mail**: `admin_novo@teste.com`
+-   **Senha**: `password` 
 
 ### 2. API REST (Swagger UI)
 
